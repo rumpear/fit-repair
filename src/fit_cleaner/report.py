@@ -21,7 +21,7 @@ def format_report(result: Result) -> str:
     if not len(track):
         return "В файле нет записей record - менять нечего."
 
-    tz_name = f"UTC{_fmt_offset(offset)}" if offset is not None else "UTC"
+    tz_name = f"UTC{fmt_offset(offset)}" if offset is not None else "UTC"
     lines.append(f"Записей: {len(track)}, {hms(0)}-{hms(len(track) - 1)} ({tz_name})")
 
     lines.append("")
@@ -64,9 +64,9 @@ def format_report(result: Result) -> str:
     if last_orig is not None and last_new is not None:
         diff = last_new - last_orig
         if abs(diff) >= 0.01:
-            lines.append(f"  дистанция: {_km(last_orig)} -> {_km(last_new)} ({diff / 1000:+.3f} км)")
+            lines.append(f"  дистанция: {fmt_km(last_orig)} -> {fmt_km(last_new)} ({diff / 1000:+.3f} км)")
         else:
-            lines.append(f"  дистанция: {_km(last_orig)} (без изменений)")
+            lines.append(f"  дистанция: {fmt_km(last_orig)} (без изменений)")
 
     lines.append("")
     lines.append("Итоги кругов и сессии")
@@ -93,7 +93,7 @@ def _groups(indices: list[int]) -> list[tuple[int, int, int]]:
     return groups
 
 
-def _fmt_offset(seconds: float) -> str:
+def fmt_offset(seconds: float) -> str:
     sign = "+" if seconds >= 0 else "-"
     minutes = round(abs(seconds) / 60)
     return f"{sign}{minutes // 60:02d}:{minutes % 60:02d}"
@@ -103,7 +103,7 @@ def _kmh(v: float) -> str:
     return f"{v * 3.6:.1f} км/ч"
 
 
-def _km(m: float) -> str:
+def fmt_km(m: float) -> str:
     return f"{m / 1000:.3f} км"
 
 
@@ -115,5 +115,5 @@ def _fmt(field: str, value: Any) -> str:
     if field.endswith("speed"):
         return _kmh(value)
     if field.endswith("distance"):
-        return _km(value)
+        return fmt_km(value)
     return str(value)
