@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import struct
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
 
 # FIT stores coordinates as "semicircles": 2^31 semicircles == 180 degrees.
 SEMICIRCLES_PER_DEGREE = 2**31 / 180.0
+
+# FIT timestamps count seconds from 1989-12-31T00:00:00Z.
+FIT_EPOCH = 631065600
 
 # Integer base types we know how to rewrite, with their "invalid" sentinel.
 INVALID_VALUES = {
@@ -38,13 +42,23 @@ class FieldRef:
     """Where a raw field lives in the file and how to encode a new value for it."""
 
     offset: int
-    size: int
-    fmt: str  # endian-prefixed struct format, e.g. "<I"
+    size: int  # total, all array elements
+    fmt: str  # endian-prefixed struct format of one element, e.g. "<I"
     base_type: str
     scale: float
     add: float  # FIT profile "offset": value = raw / scale - add
+    count: int = 1  # number of array elements
 
-    def encode(self, value: float | None) -> bytes:
+    def encode(self, value: float | datetime | Sequence[float | None] | None) -> bytes:
+        if self.count == 1:
+            return self._encode_one(value)
+        values = list(value or ())[: self.count]
+        values += [None] * (self.count - len(values))
+        return b"".join(self._encode_one(v) for v in values)
+
+    def _encode_one(self, value: float | datetime | None) -> bytes:
+        if isinstance(value, datetime):
+            value = value.timestamp() - FIT_EPOCH
         if value is None:
             raw = INVALID_VALUES[self.base_type]
         else:
@@ -53,7 +67,7 @@ class FieldRef:
         return struct.pack(self.fmt, raw)
 
     def _valid_range(self) -> tuple[int, int]:
-        bits = self.size * 8
+        bits = self.size // self.count * 8
         if self.base_type.startswith("sint"):
             return -(2 ** (bits - 1)), 2 ** (bits - 1) - 2
         if self.base_type.endswith("z"):
@@ -68,6 +82,9 @@ class Message:
     name: str
     values: dict[str, Any]
     fields: dict[str, FieldRef]
+    # The whole raw message (header byte included) in Activity.data.
+    offset: int = 0
+    size: int = 0
 
     def get(self, name: str) -> Any:
         return self.values.get(name)
@@ -83,6 +100,8 @@ class Activity:
     messages: list[Message]
     # (segment start, CRC offset) for every FIT segment in the file.
     crc_ranges: list[tuple[int, int]]
+    # (offset, size) of every definition message, in file order.
+    definitions: list[tuple[int, int]] = field(default_factory=list)
 
     def by_name(self, name: str) -> list[Message]:
         return [m for m in self.messages if m.name == name]

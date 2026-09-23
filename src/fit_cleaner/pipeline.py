@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 from fit_cleaner.model import Activity, Change, Config, Patches, Track, to_semicircles
 from fit_cleaner.position import PositionFix, repair_positions
-from fit_cleaner.reader import extract_track, timer_pauses
+from fit_cleaner.reader import extract_track, timer_pauses, utc_offset
 from fit_cleaner.speed import SpeedFix, repair_speed_distance
 from fit_cleaner.summary import summary_updates
 
@@ -63,13 +63,6 @@ def clean(activity: Activity, cfg: Config) -> Result:
         position=pos,
         changes=changes,
         patches=patches,
-        utc_offset=_utc_offset(activity),
+        utc_offset=utc_offset(activity),
     )
 
-
-def _utc_offset(activity: Activity) -> float | None:
-    for act in activity.by_name("activity"):
-        ts, local = act.time("timestamp"), act.time("local_timestamp")
-        if ts is not None and local is not None:
-            return local - ts
-    return None

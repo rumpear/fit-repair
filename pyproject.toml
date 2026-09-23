@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fit-cleaner"
 version = "0.1.0"
-description = "Remove GPS spoofing/jamming artefacts from bike computer FIT files"
+description = "Remove GPS spoofing/jamming artefacts from bike computer FIT files and merge split recordings"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["fitdecode>=0.10"]
@@ -15,6 +15,7 @@ dev = ["pytest>=8"]
 
 [project.scripts]
 fit-cleaner = "fit_cleaner.cli:main"
+fit-merge = "fit_cleaner.merge_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
