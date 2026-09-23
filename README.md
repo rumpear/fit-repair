@@ -39,10 +39,48 @@ fit-cleaner ride.fit -o fixed.fit
 
 The input file is never overwritten.
 
+## Merging recordings
+
+If a ride was stopped by accident and started again, `fit-merge` joins the recordings into
+one activity. Merge the raw files, then clean the result once, so the cleaner sees the
+whole track.
+
+```
+fit-merge "Afternoon_Ride (2).fit" "Afternoon_Ride (3).fit"   # writes "Afternoon_Ride (2).merged.fit"
+fit-cleaner "Afternoon_Ride (2).merged.fit"                    # and "Afternoon_Ride (2).merged.clean.fit"
+```
+
+| Option | Default | What it does |
+|---|---|---|
+| `-o FILE` | `<earliest>.merged.fit` | Where to save |
+| `--bridge-gap` | off | Add the straight-line distance between recordings to the distance |
+| `--force` | off | Merge even if the recordings are more than 2 h apart or the sport differs |
+| `--dry-run` | off | Show the report and write nothing |
+
+The order of files on the command line doesn't matter: they are sorted by time. Files that
+overlap in time are not merged.
+
+- **The break between recordings** becomes a pause: the timer is stopped and the distance
+  doesn't grow. The end of recording in every file but the last turns into a regular pause.
+- **Distance** of each following recording continues from where the previous one ended.
+- **Laps** stay as recorded and are numbered consecutively. The first recording usually
+  ends with a short lap, because auto-lap starts counting again in the next one.
+- **Session summaries** are combined by rules: sums (distance, timer, calories, ascent,
+  time in zones), maximums and minimums, timer-weighted averages (heart rate, cadence,
+  power, temperature). Average speed, elapsed time, lap count and the bounding box are
+  recomputed. A field without a rule is taken from the last recording, and the report
+  names it if the recordings disagree.
+- **The file header** (`file_id`, `sport`) comes from the first recording; everything else,
+  including `device_info`, is copied byte for byte.
+
+Files with several sessions, several FIT segments or compressed timestamps are not
+supported yet: `fit-merge` refuses them with a clear error.
+
 ## Uploading to Strava
 
 1. **Delete the original activity on Strava** if it's already there. Strava detects
-   duplicates by start time and will reject the fixed file.
+   duplicates by start time and will reject the fixed file. After a merge, delete **all**
+   the original recordings: the merged one starts at the first one's start time.
 2. Upload `*.clean.fit`: strava.com → "+" → "Upload activity" → "File".
 3. **Don't use "Correct Distance"**. It recomputes the distance from GPS, and where GPS is
    missing there are no coordinates, so the distance will shrink.
@@ -81,6 +119,21 @@ the track. If GPS drops out and comes back, Strava joins the points with a strai
 - **writer**: rewrites values in place, recomputes the CRC and re-reads the result with
   strict checking.
 
+Merging works the same way, except it first builds one file out of several:
+
+```
+.fit ×N → reader → merge ─ splice → reader → fixup (aggregate) → writer → .merged.fit
+```
+
+- **splice**: copies the raw messages of all files one after another under a single header
+  and CRC. All definition messages are copied, so every message decodes exactly as it did
+  in its own file. Only the extra `file_id`, `sport`, sessions and `activity` are left out,
+  along with the end-of-recording events of every file but the last.
+- **fixup**: in the spliced file the values are still per file. They are rewritten in place
+  with the same patches the cleaner uses: cumulative record fields (`distance` and others)
+  are shifted, laps are renumbered, the end of recording becomes a pause, and the summaries
+  are combined into the last file's session by the rules in **aggregate**.
+
 ## Development
 
 ```
@@ -94,4 +147,7 @@ the repository. To check against your own files:
 ```
 set FIT_CLEANER_SAMPLE=C:\path\to\ride.fit
 pytest tests/test_cli.py
+
+set FIT_MERGE_SAMPLES=C:\path\to\part1.fit;C:\path\to\part2.fit
+pytest tests/test_merge.py
 ```
