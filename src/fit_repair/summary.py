@@ -11,10 +11,10 @@ from __future__ import annotations
 import bisect
 from typing import Any
 
-from fit_cleaner import geo
-from fit_cleaner.model import Message, Track, to_degrees, to_semicircles
-from fit_cleaner.position import PositionFix
-from fit_cleaner.speed import SpeedFix
+from fit_repair import geo
+from fit_repair.model import Message, Track, to_degrees, to_semicircles
+from fit_repair.position import PositionFix
+from fit_repair.speed import SpeedFix
 
 MAX_SPEED_SLACK = 0.5  # m/s: a stored max this far above the records is bogus
 POSITION_MATCH = 200.0  # m: a stored position this close to a kept fix is fine

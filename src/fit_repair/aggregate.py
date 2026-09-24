@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from fit_cleaner.model import Message
+from fit_repair.model import Message
 
 SUM = frozenset({
     "total_timer_time", "total_moving_time", "total_distance", "total_cycles",

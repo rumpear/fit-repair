@@ -7,7 +7,7 @@ from pathlib import Path
 
 import fitdecode
 
-from fit_cleaner.model import (
+from fit_repair.model import (
     INVALID_VALUES,
     Activity,
     FieldRef,

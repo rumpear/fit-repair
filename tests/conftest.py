@@ -7,10 +7,10 @@ import fitdecode
 import pytest
 
 import fitbuilder
-from fit_cleaner import writer
-from fit_cleaner.model import Config
-from fit_cleaner.pipeline import Result, clean
-from fit_cleaner.reader import parse_activity
+from fit_repair import writer
+from fit_repair.model import Config
+from fit_repair.pipeline import Result, clean
+from fit_repair.reader import parse_activity
 
 
 @dataclass

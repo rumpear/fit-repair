@@ -5,7 +5,7 @@ import pytest
 
 import fitbuilder
 from conftest import decode
-from fit_cleaner.cli import main
+from fit_repair.cli import main
 
 
 def _spoofed_file(tmp_path: Path) -> Path:
@@ -40,9 +40,9 @@ def test_refuses_to_overwrite_input(tmp_path):
         main([str(src), "-o", str(src)])
 
 
-@pytest.mark.skipif(not os.environ.get("FIT_CLEANER_SAMPLE"), reason="set FIT_CLEANER_SAMPLE=<path to a real .fit>")
+@pytest.mark.skipif(not os.environ.get("FIT_REPAIR_SAMPLE"), reason="set FIT_REPAIR_SAMPLE=<path to a real .fit>")
 def test_real_sample(tmp_path):
     out = tmp_path / "sample.clean.fit"
-    assert main([os.environ["FIT_CLEANER_SAMPLE"], "-o", str(out)]) == 0
+    assert main([os.environ["FIT_REPAIR_SAMPLE"], "-o", str(out)]) == 0
     msgs = decode(out.read_bytes())
     assert max(r["speed"] for r in msgs["record"] if r.get("speed") is not None) < 100 / 3.6

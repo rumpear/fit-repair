@@ -5,12 +5,12 @@ import pytest
 
 import fitbuilder
 from conftest import decode
-from fit_cleaner import writer
-from fit_cleaner.merge import MergeConfig, MergeError, merge
-from fit_cleaner.merge_cli import main
-from fit_cleaner.model import Config
-from fit_cleaner.pipeline import clean
-from fit_cleaner.reader import parse_activity, read_activity, timer_pauses
+from fit_repair import writer
+from fit_repair.merge import MergeConfig, MergeError, merge
+from fit_repair.merge_cli import main
+from fit_repair.model import Config
+from fit_repair.pipeline import clean
+from fit_repair.reader import parse_activity, read_activity, timer_pauses
 from fitbuilder import HOME, START, offset, straight_ride
 
 # First recording: 300 s at 5 m/s. The second starts 135 s later, 40 m further on.

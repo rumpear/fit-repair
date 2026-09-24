@@ -6,11 +6,11 @@ from pathlib import Path
 
 import fitdecode
 
-from fit_cleaner import writer
-from fit_cleaner.model import Config
-from fit_cleaner.pipeline import clean
-from fit_cleaner.reader import read_activity
-from fit_cleaner.report import format_report
+from fit_repair import writer
+from fit_repair.model import Config
+from fit_repair.pipeline import clean
+from fit_repair.reader import read_activity
+from fit_repair.report import format_report
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -18,7 +18,7 @@ def main(argv: list[str] | None = None) -> int:
         sys.stdout.reconfigure(errors="replace")
 
     parser = argparse.ArgumentParser(
-        prog="fit-cleaner",
+        prog="fit-clean",
         description="Убирает из FIT-файла последствия глушения/подмены GPS: "
         "невозможные координаты, всплески скорости и лишнюю дистанцию.",
     )

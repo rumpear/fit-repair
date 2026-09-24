@@ -3,8 +3,8 @@ import math
 import pytest
 
 from fitbuilder import HOME, LIMA, Point, offset, straight_ride
-from fit_cleaner import geo
-from fit_cleaner.model import Config
+from fit_repair import geo
+from fit_repair.model import Config
 
 
 def _spoof(p: Point, i: int) -> None:
