@@ -12,7 +12,7 @@ import struct
 
 from fitdecode.utils import compute_crc
 
-from fit_cleaner.model import Activity, Message
+from fit_repair.model import Activity, Message
 
 HEADER_SIZE = 14
 

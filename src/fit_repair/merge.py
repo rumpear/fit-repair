@@ -18,10 +18,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from fit_cleaner import aggregate, geo
-from fit_cleaner.model import Activity, Message, Patches, Track, to_semicircles
-from fit_cleaner.reader import extract_track, parse_activity, utc_offset
-from fit_cleaner.splice import splice
+from fit_repair import aggregate, geo
+from fit_repair.model import Activity, Message, Patches, Track, to_semicircles
+from fit_repair.reader import extract_track, parse_activity, utc_offset
+from fit_repair.splice import splice
 
 # Kept from the first file only.
 ONCE = frozenset({"file_id", "file_creator", "sport"})

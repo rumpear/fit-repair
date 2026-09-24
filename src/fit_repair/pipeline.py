@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from fit_cleaner.model import Activity, Change, Config, Patches, Track, to_semicircles
-from fit_cleaner.position import PositionFix, repair_positions
-from fit_cleaner.reader import extract_track, timer_pauses, utc_offset
-from fit_cleaner.speed import SpeedFix, repair_speed_distance
-from fit_cleaner.summary import summary_updates
+from fit_repair.model import Activity, Change, Config, Patches, Track, to_semicircles
+from fit_repair.position import PositionFix, repair_positions
+from fit_repair.reader import extract_track, timer_pauses, utc_offset
+from fit_repair.speed import SpeedFix, repair_speed_distance
+from fit_repair.summary import summary_updates
 
 
 @dataclass

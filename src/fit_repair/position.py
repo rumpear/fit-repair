@@ -20,8 +20,8 @@ from __future__ import annotations
 import bisect
 from dataclasses import dataclass, field
 
-from fit_cleaner import geo
-from fit_cleaner.model import Config, Track
+from fit_repair import geo
+from fit_repair.model import Config, Track
 
 # GPS path vs wheel distance over one consistency window agree when they
 # differ by no more than this share of the larger one plus a fixed margin.

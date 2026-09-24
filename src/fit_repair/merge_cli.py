@@ -6,10 +6,10 @@ from pathlib import Path
 
 import fitdecode
 
-from fit_cleaner import writer
-from fit_cleaner.merge import MergeConfig, MergeError, merge
-from fit_cleaner.merge_report import format_merge_report
-from fit_cleaner.reader import read_activity
+from fit_repair import writer
+from fit_repair.merge import MergeConfig, MergeError, merge
+from fit_repair.merge_report import format_merge_report
+from fit_repair.reader import read_activity
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -76,5 +76,5 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     writer.write(dst, data)
     print(f"\nSaved: {dst}")
-    print(f'Now clean the GPS: fit-cleaner "{dst}"')
+    print(f'Now clean the GPS: fit-clean "{dst}"')
     return 0

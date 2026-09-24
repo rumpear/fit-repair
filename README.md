@@ -1,7 +1,10 @@
-# fit-cleaner
+# fit-repair
 
-Cleans a bike computer FIT file of the damage done by GPS jamming and spoofing, so that
-Strava gets the distance and speed right.
+Repairs bike computer FIT files before they go to Strava:
+
+- `fit-clean` removes the damage done by GPS jamming and spoofing, so that Strava gets the
+  distance and speed right;
+- `fit-merge` joins a ride that was split into several recordings.
 
 ## What it fixes
 
@@ -25,9 +28,9 @@ pip install -e .
 ## Usage
 
 ```
-fit-cleaner "Afternoon_Ride.fit"          # writes Afternoon_Ride.clean.fit next to it
-fit-cleaner ride.fit --dry-run            # report only, nothing written
-fit-cleaner ride.fit -o fixed.fit
+fit-clean "Afternoon_Ride.fit"          # writes Afternoon_Ride.clean.fit next to it
+fit-clean ride.fit --dry-run            # report only, nothing written
+fit-clean ride.fit -o fixed.fit
 ```
 
 | Option | Default | What it does |
@@ -47,7 +50,7 @@ whole track.
 
 ```
 fit-merge "Afternoon_Ride (2).fit" "Afternoon_Ride (3).fit"   # writes "Afternoon_Ride (2).merged.fit"
-fit-cleaner "Afternoon_Ride (2).merged.fit"                    # and "Afternoon_Ride (2).merged.clean.fit"
+fit-clean "Afternoon_Ride (2).merged.fit"                      # and "Afternoon_Ride (2).merged.clean.fit"
 ```
 
 | Option | Default | What it does |
@@ -145,7 +148,7 @@ The tests build synthetic FIT files (`tests/fitbuilder.py`), so no real rides ar
 the repository. To check against your own files:
 
 ```
-set FIT_CLEANER_SAMPLE=C:\path\to\ride.fit
+set FIT_REPAIR_SAMPLE=C:\path\to\ride.fit
 pytest tests/test_cli.py
 
 set FIT_MERGE_SAMPLES=C:\path\to\part1.fit;C:\path\to\part2.fit

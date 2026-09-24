@@ -12,7 +12,7 @@ from __future__ import annotations
 import bisect
 from dataclasses import dataclass
 
-from fit_cleaner.model import Config, Track
+from fit_repair.model import Config, Track
 
 
 @dataclass

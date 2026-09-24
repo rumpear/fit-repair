@@ -5,8 +5,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-from fit_cleaner.model import to_degrees
-from fit_cleaner.pipeline import Result
+from fit_repair.model import to_degrees
+from fit_repair.pipeline import Result
 
 
 def format_report(result: Result) -> str:

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from fit_cleaner.merge import Gap, Result
-from fit_cleaner.report import fmt_km, fmt_offset
+from fit_repair.merge import Gap, Result
+from fit_repair.report import fmt_km, fmt_offset
 
 
 def format_merge_report(result: Result) -> str:

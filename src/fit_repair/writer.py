@@ -14,7 +14,7 @@ from pathlib import Path
 import fitdecode
 from fitdecode.utils import compute_crc
 
-from fit_cleaner.model import Activity, Patches
+from fit_repair.model import Activity, Patches
 
 
 def apply_patches(activity: Activity, patches: Patches) -> bytes:
