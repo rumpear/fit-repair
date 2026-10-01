@@ -154,3 +154,8 @@ pytest tests/test_cli.py
 set FIT_MERGE_SAMPLES=C:\path\to\part1.fit;C:\path\to\part2.fit
 pytest tests/test_merge.py
 ```
+
+## See also
+
+- [fit-to-csv](https://github.com/rumpear/fit-to-csv): exports the `record` messages of a
+  FIT file to CSV. Handy for comparing a ride before and after `fit-clean` in a spreadsheet.
