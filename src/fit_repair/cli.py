@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import argparse
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import fitdecode
 
-from fit_repair import writer
+from fit_repair import retime, writer
 from fit_repair.model import Config
 from fit_repair.pipeline import clean
 from fit_repair.reader import read_activity
@@ -36,6 +37,15 @@ def main(argv: list[str] | None = None) -> int:
         "--no-sensor-check", action="store_true",
         help="do not cross-check GPS against the wheel sensor distance",
     )
+    parser.add_argument(
+        "--strip-gps", action="store_true",
+        help="remove all coordinates, for a ride spoofed from start to finish",
+    )
+    parser.add_argument(
+        "--start-time", type=_start_time, metavar="WHEN",
+        help='real start of the ride, e.g. "2026-09-27 15:32:20" (device local time) '
+        "or 2026-09-27T12:32:20+00:00; every time in the file is shifted to match",
+    )
     parser.add_argument("--dry-run", action="store_true", help="show the report only, write nothing")
     args = parser.parse_args(argv)
 
@@ -46,17 +56,27 @@ def main(argv: list[str] | None = None) -> int:
     if dst.resolve() == src.resolve():
         parser.error("refusing to overwrite the source file")
 
-    cfg = Config(
-        max_speed=args.max_speed / 3.6,
-        interpolate_gap=args.interpolate_gap,
-        sensor_check=not args.no_sensor_check,
-    )
-
     try:
         activity = read_activity(src)
     except fitdecode.FitError as exc:
         print(f"Failed to read FIT: {exc}", file=sys.stderr)
         return 1
+
+    shift = 0
+    if args.start_time is not None:
+        try:
+            shift = retime.resolve_shift(activity, args.start_time)
+        except ValueError as exc:
+            print(f"Cannot apply --start-time: {exc}", file=sys.stderr)
+            return 1
+
+    cfg = Config(
+        max_speed=args.max_speed / 3.6,
+        interpolate_gap=args.interpolate_gap,
+        sensor_check=not args.no_sensor_check,
+        strip_gps=args.strip_gps,
+        time_shift=shift,
+    )
 
     result = clean(activity, cfg)
     print(format_report(result))
@@ -72,3 +92,10 @@ def main(argv: list[str] | None = None) -> int:
     writer.write(dst, data)
     print(f"\nSaved: {dst}")
     return 0
+
+
+def _start_time(text: str) -> datetime:
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"not a date and time: {text!r}, expected e.g. \"2026-09-27 15:32:20\"")

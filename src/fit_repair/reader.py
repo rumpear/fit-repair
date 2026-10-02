@@ -82,6 +82,12 @@ def _field_ref(fd, offset: int, endian: str) -> FieldRef | None:
     # if it also rescaled it, the encoding would depend on the reference field.
     if any((sub.scale, sub.offset) != (scale, add) for sub in profile.subfields or ()):
         return None
+    if getattr(profile.type, "name", None) in ("date_time", "local_date_time"):
+        kind = "time"
+    elif profile.units == "semicircles":
+        kind = "position"
+    else:
+        kind = ""
     return FieldRef(
         offset=offset,
         size=fd.size,
@@ -90,6 +96,7 @@ def _field_ref(fd, offset: int, endian: str) -> FieldRef | None:
         scale=float(scale or 1),
         add=float(add or 0),
         count=fd.size // base.size,
+        kind=kind,
     )
 
 

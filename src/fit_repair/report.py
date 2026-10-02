@@ -15,19 +15,33 @@ def format_report(result: Result) -> str:
     tz = timezone(timedelta(seconds=offset)) if offset is not None else timezone.utc
 
     def hms(i: int) -> str:
-        return datetime.fromtimestamp(track.t[i], tz).strftime("%H:%M:%S")
+        return datetime.fromtimestamp(track.t[i] + result.time_shift, tz).strftime("%H:%M:%S")
+
+    def stamp(t: float) -> str:
+        return datetime.fromtimestamp(t, tz).strftime("%Y-%m-%d %H:%M:%S")
 
     lines: list[str] = []
     if not len(track):
         return "No record messages in the file - nothing to change."
 
     tz_name = f"UTC{fmt_offset(offset)}" if offset is not None else "UTC"
-    lines.append(f"Records: {len(track)}, {hms(0)}-{hms(len(track) - 1)} ({tz_name})")
+    day = datetime.fromtimestamp(track.t[0] + result.time_shift, tz).strftime("%Y-%m-%d")
+    lines.append(f"Records: {len(track)}, {day} {hms(0)}-{hms(len(track) - 1)} ({tz_name})")
+
+    if result.time_shift and result.start is not None:
+        lines.append("")
+        lines.append("Time")
+        lines.append(
+            f"  start {stamp(result.start)} -> {stamp(result.start + result.time_shift)} "
+            f"(shifted by {fmt_shift(result.time_shift)})"
+        )
 
     lines.append("")
     lines.append("GPS")
     interpolated, stale = set(pos.interpolated), set(pos.stale)
-    if pos.rejected:
+    if result.stripped is not None:
+        lines.append(f"  all coordinates removed (--strip-gps): {result.stripped} fields")
+    elif pos.rejected:
         removed = len(pos.rejected) - len(interpolated)
         lines.append(f"  coordinates removed: {removed}, interpolated: {len(interpolated)}")
         for a, b, n in _groups(pos.rejected):
@@ -43,7 +57,8 @@ def format_report(result: Result) -> str:
             lines.append(f"    {hms(a)}-{hms(b)}  records: {n} ({', '.join(reasons)})")
     else:
         lines.append("  no suspicious coordinates")
-    lines.append(f"  distance sensor cross-check: {'yes' if pos.sensor_check else 'no'}")
+    if result.stripped is None:
+        lines.append(f"  distance sensor cross-check: {'yes' if pos.sensor_check else 'no'}")
     for w in pos.warnings:
         lines.append(f"  ! {w}")
 
@@ -97,6 +112,14 @@ def fmt_offset(seconds: float) -> str:
     sign = "+" if seconds >= 0 else "-"
     minutes = round(abs(seconds) / 60)
     return f"{sign}{minutes // 60:02d}:{minutes % 60:02d}"
+
+
+def fmt_shift(seconds: int) -> str:
+    sign = "+" if seconds >= 0 else "-"
+    days, rest = divmod(abs(seconds), 86400)
+    hours, rest = divmod(rest, 3600)
+    clock = f"{hours:02d}:{rest // 60:02d}:{rest % 60:02d}"
+    return f"{sign}{days} d {clock}" if days else f"{sign}{clock}"
 
 
 def _kmh(v: float) -> str:

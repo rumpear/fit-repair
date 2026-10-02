@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from fit_repair import retime
 from fit_repair.model import Activity, Change, Config, Patches, Track, to_semicircles
 from fit_repair.position import PositionFix, repair_positions
 from fit_repair.reader import extract_track, timer_pauses, utc_offset
@@ -19,6 +20,9 @@ class Result:
     changes: list[Change]
     patches: Patches
     utc_offset: float | None  # seconds, from activity.local_timestamp
+    stripped: int | None  # coordinate fields cleared by --strip-gps, None if not asked
+    time_shift: int  # seconds added to every time
+    start: float | None  # original start time, POSIX seconds
 
 
 def clean(activity: Activity, cfg: Config) -> Result:
@@ -27,7 +31,11 @@ def clean(activity: Activity, cfg: Config) -> Result:
     pauses = timer_pauses(activity.by_name("event"))
 
     sp = repair_speed_distance(track, pauses, cfg)
-    pos = repair_positions(track, sp.dist, cfg)
+    if cfg.strip_gps:
+        # Nothing to repair: every coordinate goes, so keep the track as is here.
+        pos = PositionFix(lat=track.lat, lon=track.lon, rejected=[], interpolated=[], stale=[], sensor_check=False)
+    else:
+        pos = repair_positions(track, sp.dist, cfg)
 
     patches = Patches()
     data = activity.data
@@ -57,6 +65,10 @@ def clean(activity: Activity, cfg: Config) -> Result:
         if ref is not None and patches.set(data, ref, value):
             changes.append(Change(labels[id(msg)], name, msg.get(name), value))
 
+    stripped = retime.strip_positions(activity, patches) if cfg.strip_gps else None
+    if cfg.time_shift:
+        retime.shift_times(activity, cfg.time_shift, patches)
+
     return Result(
         track=track,
         speed=sp,
@@ -64,5 +76,8 @@ def clean(activity: Activity, cfg: Config) -> Result:
         changes=changes,
         patches=patches,
         utc_offset=utc_offset(activity),
+        stripped=stripped,
+        time_shift=cfg.time_shift,
+        start=retime.start_time(activity),
     )
 

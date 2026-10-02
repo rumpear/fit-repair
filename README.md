@@ -12,6 +12,8 @@ Repairs bike computer FIT files before they go to Strava:
 - **Frozen coordinates**: the position stands still while the wheel sensor says the bike is moving.
 - **Speed spikes** (e.g. 200 km/h from spoofed GPS) and the extra distance they added.
 - **Lap and session summaries**: distance, average and max speed, start and end points, the track's bounding box.
+- **A ride spoofed from start to finish** (on request): all coordinates are removed and the
+  wrong date the device took from the spoofed GPS clock is corrected.
 
 Heart rate, cadence, power, altitude, temperature and the timer are left alone. No records
 are deleted: bad points only lose their coordinates. Everything else in the file, including
@@ -38,9 +40,32 @@ fit-clean ride.fit -o fixed.fit
 | `--max-speed KMH` | 100 | A bike never goes faster. Threshold for both speed and GPS jumps |
 | `--interpolate-gap SEC` | 30 | Removed points in holes of at most SEC seconds are filled by interpolation; `0` disables |
 | `--no-sensor-check` | off | Don't cross-check GPS against the wheel sensor distance |
+| `--strip-gps` | off | Remove all coordinates instead of repairing the track |
+| `--start-time WHEN` | off | Real start of the ride; every time in the file is shifted to match |
 | `--dry-run` | off | Show the report and write nothing |
 
 The input file is never overwritten.
+
+### When the whole ride is spoofed
+
+`fit-clean` keeps the part of the track that agrees with itself and with the wheel sensor.
+That works while most of the track is real. If the spoofer held the receiver for the whole
+ride, every point is fake, and the "best" part is fake too: the cleaned track stays in the
+spoofed place, just with fewer points. Signs of it: the whole track lies in one far-away
+city, and the date is wrong as well, because head units set their clock from GPS.
+
+```
+fit-clean ride.fit --strip-gps --start-time "2026-09-27 15:32:20"
+```
+
+- `--strip-gps` clears every coordinate in the file: records, laps, the session's start
+  point and bounding box. Strava shows the ride without a map, with the distance and
+  speed from the wheel sensor.
+- `--start-time` moves the ride on the calendar. A time without an offset is the device's
+  local time (from `activity.local_timestamp`); an offset can be given explicitly:
+  `2026-09-27T12:32:20+00:00`. All absolute times move by the same amount, so laps,
+  pauses and the timer stay as they were. Files with compressed or 16-bit timestamps are
+  refused.
 
 ## Merging recordings
 

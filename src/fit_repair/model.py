@@ -48,6 +48,7 @@ class FieldRef:
     scale: float
     add: float  # FIT profile "offset": value = raw / scale - add
     count: int = 1  # number of array elements
+    kind: str = ""  # "time" (date_time, local_date_time), "position" (semicircles) or ""
 
     def encode(self, value: float | datetime | Sequence[float | None] | None) -> bytes:
         if self.count == 1:
@@ -141,6 +142,10 @@ class Config:
     interpolate_gap: float = 30.0  # s
     # Cross-check GPS against the distance stream (wheel sensor).
     sensor_check: bool = True
+    # Clear every coordinate in the file instead of repairing the track.
+    strip_gps: bool = False
+    # Added to every absolute time in the file (spoofed GPS also spoofs the clock).
+    time_shift: int = 0  # s
     consistency_window: float = 60.0  # s
     min_consistency: float = 0.5
     min_check_duration: float = 120.0  # s
